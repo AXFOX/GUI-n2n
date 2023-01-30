@@ -2,6 +2,9 @@ import os,sys
 #import shlex
 import subprocess
 from tkinter import *
+import configparser
+from tkinter.scrolledtext import ScrolledText
+
 
 ui=Tk()
 ui.resizable(width=False, height=False)
@@ -11,7 +14,7 @@ ui.title("Gui-n2n")
 #cmdline = ".\edge -c work -a 192.168.88.10 -k justdoit -l xfox.fun:8080"
 # 第二个标签框架 <文本框 x1>
 lableFrame2 = LabelFrame(ui, text='Service Log')
-logtext = Text(lableFrame2, height=32, width=65)
+logtext = ScrolledText(lableFrame2, height=32, width=65)
 logtext.pack()
 lableFrame2.grid(column=1, row=1, sticky=N + S, padx=8, rowspan=3)
 # 第一个标签框架 < 输入框x3  >
@@ -41,12 +44,16 @@ lableFrame1.grid(column=2, row=1, sticky=N, padx=10)
 HelpText = Label(ui, justify=CENTER, text="使用说明：\nhttps://xfox.fun/archives/1330")
 HelpText.grid(column=2,row=3)
 
-
-
 #控制区 Start
 LableFrame3=LabelFrame(ui,text="Control")
 
 ##获取各项参数
+config=configparser.ConfigParser()
+config.read('GUI-n2n.config')
+Input0.insert(INSERT,config['edge']['SuperNodeAddr'])
+Input1.insert(INSERT, config['edge']['CommunityName'])
+Input2.insert(INSERT,config['edge']['EncryptionKey'])
+Input3.insert(INSERT,config['edge']['CustomIPAddr'])
 SuperNodeAddr=Input0.get()
 CommunityName=Input1.get()
 EncryptionKey=Input2.get()
@@ -54,23 +61,36 @@ CustomIPAddr=Input3.get()
 Parameter=" -c "+CommunityName+" -a "+CustomIPAddr+" -k "+EncryptionKey+" -l "+SuperNodeAddr
 #cmdline="edge -c game -a 192.168.99.10 -k justdoit -l xfox.fun:8080"
 Path=os.path.dirname(os.path.realpath(__file__))
-
-
+Edge = []
 def WindowsRun():
     CorePath=Path+"\edge.exe"
     cmdline=CorePath+Parameter
-    core = subprocess.Popen([cmdline],
+    #print(cmdline)
+    cmdline = "C:\Windows\System32\PING.EXE -t xfox.fun"
+    logtext.insert(END, cmdline+"\n")
+    core = subprocess.Popen(cmdline,
                             shell=True,
                             stdout=subprocess.PIPE,
-                            encoding="utf-8")
+                            encoding="GBK",
+                            universal_newlines=True)
+    #line = core.stdout.readline()
+    #print(line)
+    #core.kill()
+    #print(core.poll())
+    Edge.append(core.pid)#使用列表全局传参（进程PID）
+    #core.kill()
     while True:
         line = core.stdout.readline()
-        if ((line is None) and core.poll() !=None):
-            logtext.insert(END,line)
+        print(line)
+        if  not line and core.poll() != None:
             break
+        logtext.insert(END, line)
+        logtext.update()#刷新文本框内容
+
+
 def LinuxRun():
     cmdline = "sudo edge " + Parameter
-    core = subprocess.Popen([cmdline],
+    core = subprocess.Popen(cmdline,
                             shell=True,
                             stdout=subprocess.PIPE,
                             encoding="utf-8")
@@ -79,24 +99,36 @@ def LinuxRun():
         if ((line is None) and core.poll() != None):
             logtext.insert(END, line)
             break
+
+
+
 def CoreRun():
     if sys.platform.startswith('linux'):
         LinuxRun()
-        Status = True
         pass
     elif sys.platform.startswith('drawin'):
-
         pass
     elif sys.platform.startswith('win32') or sys.platform.startwith('cygwin'):
         WindowsRun()
-        Status=True
         pass
 
-
+def CoreStop():
+    PID = str(Edge[0])
+    print(PID)
+    if sys.platform.startswith('linux'):
+        pass
+    elif sys.platform.startswith('drawin'):
+        pass
+    elif sys.platform.startswith('win32') or sys.platform.startwith('cygwin'):
+        os.popen('taskkill.exe /T /F /pid:'+PID)
+        logtext.insert(END, "================\nn2n core was stopped.")
+        pass
 
 ## 启停按钮
-StartButton=Button(LableFrame3,text="Start n2n",command=CoreRun())
+StartButton=Button(LableFrame3,text="Start n2n",command=CoreRun)
 StartButton.grid(column=1,row=1)
+StopButton = Button(LableFrame3, text="Stop n2n", command=CoreStop)
+StopButton.grid(column=2, row=1)
 LableFrame3.grid(column=2, row=2, sticky=N+S+W+E)
 #控制区 END
 
