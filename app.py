@@ -133,6 +133,7 @@ def CoreStop():
         #os.popen('taskkill.exe /T /F /pid:'+PID)
         logtext.insert(END, "================\nn2n core was stopped.")
         pass
+    logtext.see(END)
 
 ## 启停按钮
 StartButton=Button(LableFrame3,text="Start n2n",command=CoreRun)
