@@ -66,18 +66,17 @@ def WindowsRun():
     CorePath=Path+"\edge.exe"
     cmdline=CorePath+Parameter
     #print(cmdline)
-    #cmdline = "C:\Windows\System32\PING.EXE -t xfox.fun"
+    cmdline = "C:\Windows\System32\PING.EXE -t xfox.fun"
     logtext.insert(END, cmdline+"\n")
-    core = subprocess.Popen(cmdline,
-                            shell=True,
+    Edge.append(subprocess.Popen(cmdline,
+                            shell=False,
                             stdout=subprocess.PIPE,
                             encoding="GBK",
-                            universal_newlines=True)
-    #line = core.stdout.readline()
-    #print(line)
+                            universal_newlines=True))
+    core=Edge[0]        #全局列表传递N2N Core对象
     #core.kill()
     #print(core.poll())
-    Edge.append(core.pid)#使用列表全局传参（进程PID）
+    #Edge.append(core.pid)#使用列表全局传参（进程PID）
     #core.kill()
     while True:
         line = core.stdout.readline()
@@ -90,15 +89,18 @@ def WindowsRun():
 
 def LinuxRun():
     cmdline = "sudo edge " + Parameter
-    core = subprocess.Popen(cmdline,
+    Edge.append(subprocess.Popen(cmdline,
                             shell=True,
                             stdout=subprocess.PIPE,
-                            encoding="utf-8")
+                            encoding="utf-8"))
+    core = Edge[0]
     while True:
         line = core.stdout.readline()
-        if ((line is None) and core.poll() != None):
-            logtext.insert(END, line)
+        print(line)
+        if not line and core.poll() != None:
             break
+        logtext.insert(END, line)
+        logtext.update()  #刷新文本框内容
 
 
 
@@ -113,14 +115,19 @@ def CoreRun():
         pass
 
 def CoreStop():
-    PID = str(Edge[0])
-    print(PID)
+    Core = Edge[0]
+    PID=Core.pid()#PID = str(Edge[1])
+    print("Child PID:"+PID)
     if sys.platform.startswith('linux'):
+        Core.terminate()
+        #os.popen('sudo kill -9 '+PID)
+        logtext.insert(END, "================\nn2n core was stopped.")
         pass
     elif sys.platform.startswith('drawin'):
         pass
     elif sys.platform.startswith('win32') or sys.platform.startwith('cygwin'):
-        os.popen('taskkill.exe /T /F /pid:'+PID)
+        Core.terminate()
+        #os.popen('taskkill.exe /T /F /pid:'+PID)
         logtext.insert(END, "================\nn2n core was stopped.")
         pass
 
