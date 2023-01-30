@@ -84,7 +84,9 @@ def WindowsRun():
         if  not line and core.poll() != None:
             break
         logtext.insert(END, line)
+        logtext.see(END)
         logtext.update()#刷新文本框内容
+        
 
 
 def LinuxRun():
@@ -100,6 +102,7 @@ def LinuxRun():
         if not line and core.poll() != None:
             break
         logtext.insert(END, line)
+        logtext.see(END)
         logtext.update()  #刷新文本框内容
 
 
