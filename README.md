@@ -7,4 +7,4 @@ A n2n edge node GUI  client by Python tkinter.
 
 2. edit config and run.
 
-now ,GUI-n2n just can run in Windows, Linux and MAC support pls wait. 
+now ,GUI-n2n just can run on Windows, Linux and MAC support pls wait. 
