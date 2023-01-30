@@ -66,7 +66,7 @@ def WindowsRun():
     CorePath=Path+"\edge.exe"
     cmdline=CorePath+Parameter
     #print(cmdline)
-    cmdline = "C:\Windows\System32\PING.EXE -t xfox.fun"
+    #cmdline = "C:\Windows\System32\PING.EXE -t xfox.fun"
     logtext.insert(END, cmdline+"\n")
     core = subprocess.Popen(cmdline,
                             shell=True,
